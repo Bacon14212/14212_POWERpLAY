@@ -65,7 +65,6 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
 
     final double CLAW_OPEN = 0.7;     // SERVO POSITION TO OPEN CLAW
     final double CLAW_CLOSE = 1;    // SERVO POSITION TO CLOSE CLAW
-    final double PIVOT_DOWN = 0;
     final double PIVOT_UP = 0.75;
     final double PIVOT_UP_L = 0.25;
     final double WRIST_UP = 0.7;
@@ -73,9 +72,6 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
 
 
 
-    public int finalx;
-    public int finaly;
-    public int finalh;
 
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
