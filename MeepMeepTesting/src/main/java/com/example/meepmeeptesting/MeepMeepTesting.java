@@ -18,12 +18,9 @@ public class MeepMeepTesting {
                 .setConstraints(55, 55, 15, 15, 15)
 
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-35, -64, Math.toRadians(90) ))
-                                .lineToSplineHeading(new Pose2d(-35, -20, Math.toRadians(90)))
-                                .splineTo(new Vector2d(-60, -12), Math.toRadians(180))
+                        drive.trajectorySequenceBuilder(new Pose2d(35, -64, Math.toRadians(270) ))
 
 
-                               /*
                                 .lineToSplineHeading(new Pose2d(35, -21, Math.toRadians(270)))
 
                                 .splineTo(new Vector2d(32, -10), Math.toRadians(135))
@@ -79,7 +76,6 @@ public class MeepMeepTesting {
 
 
 
-                                */
 
 
                                 /*
@@ -116,10 +112,10 @@ public class MeepMeepTesting {
                                 .splineTo(new Vector2d(-29, -5), Math.toRadians(45))
                                 .waitSeconds(0.3)
 
-                                 */
 
 
 
+*/
 
 
 
@@ -178,7 +174,7 @@ public class MeepMeepTesting {
 
                                  */
 
-                                        .build());
+
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_POWERPLAY_OFFICIAL)
                 .setDarkMode(true)
