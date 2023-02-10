@@ -55,7 +55,8 @@ public class NEW_TELEOP extends OpMode {
     final double CLAW_OPEN = 0.7;     // SERVO POSITION TO OPEN CLAW
     final double CLAW_CLOSE = 1;    // SERVO POSITION TO CLOSE CLAW
     final double PIVOT_DOWN = 0;
-    final double PIVOT_UP = 0.7;
+    final double PIVOT_UP = 0.8;
+    final double PIVOTL_UP = 0.2;
     final double WRIST_UP = 0.7;
     final double WRIST_DOWN = 0.02;
 
@@ -186,7 +187,7 @@ public class NEW_TELEOP extends OpMode {
                     liftTarget = LIFT_LEVEL_THREE;
                 }
                 if (scoreTimer.milliseconds() >= startTime + 300) {
-                    pivotL.setPosition(0.3);
+                    pivotL.setPosition(PIVOTL_UP);
                     pivotR.setPosition(PIVOT_UP);
                 }
 
@@ -223,10 +224,10 @@ public class NEW_TELEOP extends OpMode {
             case OPEN_CLAW:
                liftTarget = LIFT.getCurrentPosition() - 50;
                 wrist.setPosition(WRIST_UP);
-                pivotL.setPosition(0.3);
+                pivotL.setPosition(PIVOTL_UP);
                 pivotR.setPosition(PIVOT_UP);
                 claw.setPosition(CLAW_OPEN);
-                   if (scoreTimer.milliseconds() >= startTime + 600) {
+                   if (scoreTimer.milliseconds() >= startTime + 500) {
                        scoreTimer.reset();
                     liftState = LiftState.RESET;
                     liftTarget = LIFT_LEVEL_ORIGINAL;

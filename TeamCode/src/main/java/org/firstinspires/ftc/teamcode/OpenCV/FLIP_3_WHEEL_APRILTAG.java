@@ -272,7 +272,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     //Grab
                     //
                     .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -321,7 +321,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     })
                     .waitSeconds(0.3)
                     .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -373,7 +373,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -425,7 +425,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -477,7 +477,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -583,7 +583,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     //Grab
                     //
                     .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -632,7 +632,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     })
                     .waitSeconds(0.3)
                     .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -684,7 +684,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -736,7 +736,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -788,7 +788,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -896,7 +896,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     //Grab
                     //
                     .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -945,7 +945,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     })
                     .waitSeconds(0.3)
                     .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -997,7 +997,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -1049,7 +1049,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -1101,7 +1101,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.5, -14, Math.toRadians(180)))
+                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
