@@ -1,8 +1,7 @@
-package org.firstinspires.ftc.teamcode.OpenCV;
+package org.firstinspires.ftc.teamcode.AUTOS;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,8 +9,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Auto.SleeveDetection;
-import org.firstinspires.ftc.teamcode.OpenCV.AprilTagDetectionPipeline;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -22,8 +19,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 
-@Autonomous(group = "LEFT SIDE AUTO")
-public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
+@Autonomous(group = "BACKUP")
+public class BACKUP_AUTO extends LinearOpMode {
     static final double COUNTS_PER_MOTOR_REV = 103.8;        // TICKS PER REVOLUTION FOR 5203 435RPM MOTOR
     static final double DRIVE_GEAR_REDUCTION = 1.0;          // This is < 1.0 if geared UP
     static final double PULLEY_HUB_DIAMETER_INCHES = 1.4;   // For figuring circumference
@@ -34,8 +31,8 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
     static final double SECOND_LEVEL_INCHES = 4;// HEIGHT FOR SECOND LEVEL IN INCHES
     static final double FOURTH_LEVEL_INCHES = 3;
     static final double FIFTH_LEVEL_INCHES = 2;
-    static final double THIRD_LEVEL_INCHES = 21.5;// HEIGHT FOR THIRD LEVEL IN INCHES
-    static final double DOWN_LEVEL_INCHES = 15;
+    static final double THIRD_LEVEL_INCHES = 13;// HEIGHT FOR THIRD LEVEL IN INCHES
+    static final double DOWN_LEVEL_INCHES = 8;
 
 
     //CALCULATED NUMBER OF TICKS USED TO MOVE THE SLIDE 'X' INCHES
@@ -63,8 +60,8 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
     public Servo pivotR;
     public Servo wrist;
 
-    final double CLAW_OPEN = 0.7;     // SERVO POSITION TO OPEN CLAW
-    final double CLAW_CLOSE = 1;    // SERVO POSITION TO CLOSE CLAW
+    final double CLAW_OPEN = 0.4;     // SERVO POSITION TO OPEN CLAW
+    final double CLAW_CLOSE = 0;    // SERVO POSITION TO CLOSE CLAW
     final double PIVOT_UP = 0.7;
     final double PIVOT_UP_L = 0.3;
     final double WRIST_UP = 0.7;
@@ -151,7 +148,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Pose2d startPose = new Pose2d(-35, -65.4, Math.toRadians(270));
+        Pose2d startPose = new Pose2d(35, -65.4, Math.toRadians(270));
 
         drive.setPoseEstimate(startPose);
 
@@ -224,10 +221,10 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
         TrajectorySequence trajSeq = null;
         if (tagOfInterest == null || tagOfInterest.id == right) {
             trajSeq = drive.trajectorySequenceBuilder(startPose)
-                    //First Cone
-                    //
-                    //
-                    .lineToSplineHeading(new Pose2d(-35, -21, Math.toRadians(270)))
+                    /**
+                     * Prelaaded Cone
+                     */
+                    .lineToSplineHeading(new Pose2d(35, -8, Math.toRadians(90)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.9, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -242,21 +239,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .lineToSplineHeading(new Pose2d(31, -16, Math.toRadians(45)))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -268,11 +263,12 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3)
-                    //Second Cone
-                    //Grab
-                    //
-                    .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+
+                    /**
+                     * Second Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -283,8 +279,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -298,17 +293,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(new Vector2d(-30.5, -9.5), Math.toRadians(45))
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -320,8 +317,11 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3)
-                    .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+                    /**
+                     * Third COne
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -332,8 +332,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -344,24 +343,22 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
-                    .UNSTABLE_addTemporalMarkerOffset(-0.3, () -> {
+                    .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -372,8 +369,12 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
-                    .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+                    .waitSeconds(0.3)
+                    /**
+                     * Fourth Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -384,8 +385,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -399,21 +399,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -424,8 +422,12 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
-                    .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+                    .waitSeconds(0.3)
+                    /**
+                     * Fifth Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -436,8 +438,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -451,73 +452,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
-                        pivotL.setPosition(1);
-                        pivotR.setPosition(0);
-                        wrist.setPosition(WRIST_DOWN);
-                        LIFT.setTargetPosition(LIFT_LEVEL_ORIGINAL);
-                        LIFT2.setTargetPosition(LIFT_LEVEL_ORIGINAL);
-                        LIFT.setPower(ARM_SPEED);
-                        LIFT2.setPower(ARM_SPEED);
-                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    })
-                    .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
-
-                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
-
-                    .waitSeconds(0.2)
-
-                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
-                        pivotL.setPosition(0.5);
-                        pivotR.setPosition(0.5);
-
-                    })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
-                    .UNSTABLE_addTemporalMarkerOffset(-0.6, () -> {
-                        pivotL.setPosition(PIVOT_UP_L);
-                        pivotR.setPosition(PIVOT_UP);
-                        LIFT.setTargetPosition(LIFT_LEVEL_THREE);
-                        LIFT2.setTargetPosition(LIFT_LEVEL_THREE);
-                        LIFT.setPower(ARM_SPEED);
-                        LIFT2.setPower(ARM_SPEED);
-                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    })
-                    .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
-                        wrist.setPosition(WRIST_UP);
-                    })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
-                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
-                        LIFT.setTargetPosition(DOWN);
-                        LIFT2.setTargetPosition(DOWN);
-                        LIFT.setPower(ARM_SPEED);
-                        LIFT2.setPower(ARM_SPEED);
-                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         claw.setPosition(CLAW_OPEN);
-                    })
-                    .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -529,16 +476,77 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3)
-                    .lineToSplineHeading(new Pose2d(-10, -15, Math.toRadians(270)))
+                    /**
+                     * Last Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
+
+                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
+
+                    .waitSeconds(0.2)
+
+                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.5);
+                        pivotR.setPosition(0.5);
+
+                    })
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
+                    .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
+                        pivotL.setPosition(PIVOT_UP_L);
+                        pivotR.setPosition(PIVOT_UP);
+                        LIFT.setTargetPosition(LIFT_LEVEL_THREE);
+                        LIFT2.setTargetPosition(LIFT_LEVEL_THREE);
+                        LIFT.setPower(ARM_SPEED);
+                        LIFT2.setPower(ARM_SPEED);
+                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    })
+                    .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
+                        wrist.setPosition(WRIST_UP);
+                    })
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
+                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
+                        LIFT.setTargetPosition(DOWN);
+                        LIFT2.setTargetPosition(DOWN);
+                        LIFT.setPower(ARM_SPEED);
+                        LIFT2.setPower(ARM_SPEED);
+                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    })
+                    .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
+                        pivotL.setPosition(1);
+                        pivotR.setPosition(0);
+                        wrist.setPosition(WRIST_DOWN);
+                        LIFT.setTargetPosition(LIFT_LEVEL_ORIGINAL);
+                        LIFT2.setTargetPosition(LIFT_LEVEL_ORIGINAL);
+                        LIFT.setPower(ARM_SPEED);
+                        LIFT2.setPower(ARM_SPEED);
+                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    })
+                    .waitSeconds(0.3)
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(59.2, -13, Math.toRadians(0)))
                     .waitSeconds(10)
                     .build();
         }
 
+        /**
+         *
+         * Middle Auto
+         *
+         */
         TrajectorySequence trajSeq2 = null;
         if (tagOfInterest.id == middle) {
             trajSeq2 = drive.trajectorySequenceBuilder(startPose)
-                    //First Con
-                    .lineToSplineHeading(new Pose2d(-35, -21, Math.toRadians(270)))
+                    /**
+                     * Prelaaded Cone
+                     */
+                    .lineToSplineHeading(new Pose2d(35, -8, Math.toRadians(90)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.9, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -553,21 +561,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .lineToSplineHeading(new Pose2d(31, -16, Math.toRadians(45)))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -579,11 +585,12 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3)
-                    //Second Cone
-                    //Grab
-                    //
-                    .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+
+                    /**
+                     * Second Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -594,8 +601,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -609,17 +615,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(new Vector2d(-30.5, -9.5), Math.toRadians(45))
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -631,8 +639,11 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3)
-                    .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+                    /**
+                     * Third COne
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -643,8 +654,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -655,24 +665,22 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
-                    .UNSTABLE_addTemporalMarkerOffset(-0.3, () -> {
+                    .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -683,8 +691,12 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
-                    .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+                    .waitSeconds(0.3)
+                    /**
+                     * Fourth Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -695,8 +707,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -710,21 +721,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -735,8 +744,12 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
-                    .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+                    .waitSeconds(0.3)
+                    /**
+                     * Fifth Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -747,8 +760,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -762,73 +774,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
-                        pivotL.setPosition(1);
-                        pivotR.setPosition(0);
-                        wrist.setPosition(WRIST_DOWN);
-                        LIFT.setTargetPosition(LIFT_LEVEL_ORIGINAL);
-                        LIFT2.setTargetPosition(LIFT_LEVEL_ORIGINAL);
-                        LIFT.setPower(ARM_SPEED);
-                        LIFT2.setPower(ARM_SPEED);
-                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    })
-                    .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
-
-                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
-
-                    .waitSeconds(0.2)
-
-                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
-                        pivotL.setPosition(0.5);
-                        pivotR.setPosition(0.5);
-
-                    })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
-                    .UNSTABLE_addTemporalMarkerOffset(-0.6, () -> {
-                        pivotL.setPosition(PIVOT_UP_L);
-                        pivotR.setPosition(PIVOT_UP);
-                        LIFT.setTargetPosition(LIFT_LEVEL_THREE);
-                        LIFT2.setTargetPosition(LIFT_LEVEL_THREE);
-                        LIFT.setPower(ARM_SPEED);
-                        LIFT2.setPower(ARM_SPEED);
-                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    })
-                    .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
-                        wrist.setPosition(WRIST_UP);
-                    })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
-                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
-                        LIFT.setTargetPosition(DOWN);
-                        LIFT2.setTargetPosition(DOWN);
-                        LIFT.setPower(ARM_SPEED);
-                        LIFT2.setPower(ARM_SPEED);
-                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         claw.setPosition(CLAW_OPEN);
-                    })
-                    .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -840,18 +798,72 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3)
-                    .lineToSplineHeading(new Pose2d(-35, -21, Math.toRadians(270)))
+                    /**
+                     * Last Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
+
+                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
+
+                    .waitSeconds(0.2)
+
+                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.5);
+                        pivotR.setPosition(0.5);
+
+                    })
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
+                    .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
+                        pivotL.setPosition(PIVOT_UP_L);
+                        pivotR.setPosition(PIVOT_UP);
+                        LIFT.setTargetPosition(LIFT_LEVEL_THREE);
+                        LIFT2.setTargetPosition(LIFT_LEVEL_THREE);
+                        LIFT.setPower(ARM_SPEED);
+                        LIFT2.setPower(ARM_SPEED);
+                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    })
+                    .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
+                        wrist.setPosition(WRIST_UP);
+                    })
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
+                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
+                        LIFT.setTargetPosition(DOWN);
+                        LIFT2.setTargetPosition(DOWN);
+                        LIFT.setPower(ARM_SPEED);
+                        LIFT2.setPower(ARM_SPEED);
+                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    })
+                    .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
+                        pivotL.setPosition(1);
+                        pivotR.setPosition(0);
+                        wrist.setPosition(WRIST_DOWN);
+                        LIFT.setTargetPosition(LIFT_LEVEL_ORIGINAL);
+                        LIFT2.setTargetPosition(LIFT_LEVEL_ORIGINAL);
+                        LIFT.setPower(ARM_SPEED);
+                        LIFT2.setPower(ARM_SPEED);
+                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    })
+                    .waitSeconds(0.3)
+                    .lineToSplineHeading(new Pose2d(34, -25, Math.toRadians(270)))
                     .waitSeconds(10)
                     .build();
 
         }
 
         TrajectorySequence trajSeq3 = null;
-         if (tagOfInterest.id == left) {
+        if (tagOfInterest.id == left) {
             trajSeq3 = drive.trajectorySequenceBuilder(startPose)
-
-                    //First Cone
-                    .lineToSplineHeading(new Pose2d(-35, -21, Math.toRadians(270)))
+                    /**
+                     * Prelaaded Cone
+                     */
+                    .lineToSplineHeading(new Pose2d(35, -8, Math.toRadians(90)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.9, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -866,21 +878,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .lineToSplineHeading(new Pose2d(31, -16, Math.toRadians(45)))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -892,11 +902,12 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3)
-                    //Second Cone
-                    //Grab
-                    //
-                    .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+
+                    /**
+                     * Second Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -907,8 +918,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -922,17 +932,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(new Vector2d(-30.5, -9.5), Math.toRadians(45))
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -944,8 +956,11 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3)
-                    .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+                    /**
+                     * Third COne
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -956,8 +971,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -968,24 +982,22 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
-                    .UNSTABLE_addTemporalMarkerOffset(-0.3, () -> {
+                    .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -996,8 +1008,12 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
-                    .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+                    .waitSeconds(0.3)
+                    /**
+                     * Fourth Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -1008,8 +1024,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -1023,21 +1038,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -1048,8 +1061,12 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
-                    .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
+                    .waitSeconds(0.3)
+                    /**
+                     * Fifth Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
 
@@ -1060,8 +1077,7 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         pivotR.setPosition(0.5);
 
                     })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
                     .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
                         pivotL.setPosition(PIVOT_UP_L);
                         pivotR.setPosition(PIVOT_UP);
@@ -1075,73 +1091,19 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                     .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
                         wrist.setPosition(WRIST_UP);
                     })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
                     .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
                         LIFT.setTargetPosition(DOWN);
                         LIFT2.setTargetPosition(DOWN);
                         LIFT.setPower(ARM_SPEED);
                         LIFT2.setPower(ARM_SPEED);
                         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        claw.setPosition(CLAW_OPEN);
                     })
                     .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
-                        pivotL.setPosition(1);
-                        pivotR.setPosition(0);
-                        wrist.setPosition(WRIST_DOWN);
-                        LIFT.setTargetPosition(LIFT_LEVEL_ORIGINAL);
-                        LIFT2.setTargetPosition(LIFT_LEVEL_ORIGINAL);
-                        LIFT.setPower(ARM_SPEED);
-                        LIFT2.setPower(ARM_SPEED);
-                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    })
-                    .waitSeconds(0.3) .splineTo(new Vector2d(-45, -14), Math.toRadians(180))
-                    .lineToLinearHeading(new Pose2d(-59.2, -14, Math.toRadians(180)))
-
-                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
-
-                    .waitSeconds(0.2)
-
-                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
-                        pivotL.setPosition(0.5);
-                        pivotR.setPosition(0.5);
-
-                    })
-                    .lineToLinearHeading(new Pose2d(-50, -14, Math.toRadians(180)))
-
-                    .UNSTABLE_addTemporalMarkerOffset(-0.6, () -> {
-                        pivotL.setPosition(PIVOT_UP_L);
-                        pivotR.setPosition(PIVOT_UP);
-                        LIFT.setTargetPosition(LIFT_LEVEL_THREE);
-                        LIFT2.setTargetPosition(LIFT_LEVEL_THREE);
-                        LIFT.setPower(ARM_SPEED);
-                        LIFT2.setPower(ARM_SPEED);
-                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    })
-                    .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
-                        wrist.setPosition(WRIST_UP);
-                    })
-                    .splineTo(
-                            new Vector2d(-30.5, -9.5), Math.toRadians(45),
-                            SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                    )
-                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
-                        LIFT.setTargetPosition(DOWN);
-                        LIFT2.setTargetPosition(DOWN);
-                        LIFT.setPower(ARM_SPEED);
-                        LIFT2.setPower(ARM_SPEED);
-                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         claw.setPosition(CLAW_OPEN);
-                    })
-                    .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
                         pivotL.setPosition(1);
                         pivotR.setPosition(0);
                         wrist.setPosition(WRIST_DOWN);
@@ -1153,8 +1115,60 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
                         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     })
                     .waitSeconds(0.3)
-                    .lineToSplineHeading(new Pose2d(-45, -16, Math.toRadians(180)))
-                    .splineToConstantHeading(new Vector2d(-59, -15), Math.toRadians(180))
+                    /**
+                     * Last Cone
+                     */
+                    .splineTo(new Vector2d(45, -13), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
+
+                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> claw.setPosition(CLAW_CLOSE))   // Push servo out
+
+                    .waitSeconds(0.2)
+
+                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.5);
+                        pivotR.setPosition(0.5);
+
+                    })
+                    .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
+                    .UNSTABLE_addTemporalMarkerOffset(-0.4, () -> {
+                        pivotL.setPosition(PIVOT_UP_L);
+                        pivotR.setPosition(PIVOT_UP);
+                        LIFT.setTargetPosition(LIFT_LEVEL_THREE);
+                        LIFT2.setTargetPosition(LIFT_LEVEL_THREE);
+                        LIFT.setPower(ARM_SPEED);
+                        LIFT2.setPower(ARM_SPEED);
+                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    })
+                    .UNSTABLE_addTemporalMarkerOffset(-0.35, () -> {
+                        wrist.setPosition(WRIST_UP);
+                    })
+                    .splineTo(new Vector2d(31, -16), Math.toRadians(225))
+                    .UNSTABLE_addTemporalMarkerOffset(0.1, () -> {
+                        pivotL.setPosition(0.2);
+                        pivotR.setPosition(0.8);
+                        LIFT.setTargetPosition(DOWN);
+                        LIFT2.setTargetPosition(DOWN);
+                        LIFT.setPower(ARM_SPEED);
+                        LIFT2.setPower(ARM_SPEED);
+                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    })
+                    .UNSTABLE_addTemporalMarkerOffset(0.3, () -> {
+                        claw.setPosition(CLAW_OPEN);
+                        pivotL.setPosition(1);
+                        pivotR.setPosition(0);
+                        wrist.setPosition(WRIST_DOWN);
+                        LIFT.setTargetPosition(LIFT_LEVEL_ORIGINAL);
+                        LIFT2.setTargetPosition(LIFT_LEVEL_ORIGINAL);
+                        LIFT.setPower(ARM_SPEED);
+                        LIFT2.setPower(ARM_SPEED);
+                        LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    })
+                    .waitSeconds(0.3)
+                    .lineToSplineHeading(new Pose2d(10, -15, Math.toRadians(270)))
                     .waitSeconds(10)
                     .build();
         }
@@ -1180,6 +1194,11 @@ public class FLIP_3_WHEEL_APRILTAG extends LinearOpMode {
         telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
     }
 }
+
+
+
+
+
 
 
 

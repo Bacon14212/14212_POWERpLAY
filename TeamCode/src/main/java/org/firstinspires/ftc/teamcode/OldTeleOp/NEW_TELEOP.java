@@ -19,10 +19,10 @@ public class NEW_TELEOP extends OpMode {
     static final double PULLEY_HUB_DIAMETER_INCHES = 1.4;   // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (PULLEY_HUB_DIAMETER_INCHES * 3.1415);
-    static final double ARM_SPEED = 0.85;
-    static final double FIRST_LEVEL_INCHES = 2;         // HEIGHT FOR FIRST LEVEL IN INCHES
-    static final double SECOND_LEVEL_INCHES = 12;        // HEIGHT FOR SECOND LEVEL IN INCHES
-    static final double THIRD_LEVEL_INCHES = 22;
+    static final double ARM_SPEED = 0.8;
+    static final double FIRST_LEVEL_INCHES = 3;         // HEIGHT FOR FIRST LEVEL IN INCHES
+    static final double SECOND_LEVEL_INCHES = 13;        // HEIGHT FOR SECOND LEVEL IN INCHES
+    static final double THIRD_LEVEL_INCHES = 23;
 
 
     //CALCULATED NUMBER OF TICKS USED TO MOVE THE SLIDE 'X' INCHES
@@ -52,8 +52,8 @@ public class NEW_TELEOP extends OpMode {
     public Servo pivotR;
     public Servo wrist;
 
-    final double CLAW_OPEN = 0.7;     // SERVO POSITION TO OPEN CLAW
-    final double CLAW_CLOSE = 1;    // SERVO POSITION TO CLOSE CLAW
+    final double CLAW_OPEN = 0.4;     // SERVO POSITION TO OPEN CLAW
+    final double CLAW_CLOSE = 0;    // SERVO POSITION TO CLOSE CLAW
     final double PIVOT_DOWN = 0;
     final double PIVOT_UP = 0.8;
     final double PIVOTL_UP = 0.2;
@@ -129,8 +129,8 @@ public class NEW_TELEOP extends OpMode {
                 pivotL.setPosition(1);
                 pivotR.setPosition(0);
                 claw.setPosition(CLAW_OPEN);
+                wrist.setPosition(WRIST_DOWN);
 
-                   wrist.setPosition(WRIST_DOWN);
                //Sets Lift motors to 0 power
                 if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) < 5) {
                     LIFT.setPower(0);
@@ -154,16 +154,16 @@ public class NEW_TELEOP extends OpMode {
                 if(gamepad1.y){
                     liftTarget = LIFT_LEVEL_THREE;
                 }
+                //Close Claw
                 claw.setPosition(CLAW_CLOSE);
-
+                wrist.setPosition(WRIST_DOWN);
+                //Sets arm up
                 if (scoreTimer.milliseconds() >= startTime + 500) {
                     pivotL.setPosition(0.5);
                     pivotR.setPosition(0.5);
                 }
-                wrist.setPosition(WRIST_DOWN);
 
                 if(gamepad1.a || gamepad1.b || gamepad1.y){
-                    scoreTimer.reset();
                     liftState = LiftState.GRIP_UP;
                     wrist.setPosition(WRIST_UP);
                     FirstUpdate=true;
@@ -186,10 +186,9 @@ public class NEW_TELEOP extends OpMode {
                 if(gamepad1.y){
                     liftTarget = LIFT_LEVEL_THREE;
                 }
-                if (scoreTimer.milliseconds() >= startTime + 300) {
-                    pivotL.setPosition(PIVOTL_UP);
-                    pivotR.setPosition(PIVOT_UP);
-                }
+                    pivotL.setPosition(0.3);
+                    pivotR.setPosition(0.7);
+
 
                 if(gamepad1.right_bumper){
                     scoreTimer.reset();
@@ -197,9 +196,9 @@ public class NEW_TELEOP extends OpMode {
                     FirstUpdate = true;
                 }
 
-
                 if(gamepad1.dpad_up){
-                    liftState = LiftState.GRIP_DOWN;
+                    claw.setPosition(CLAW_CLOSE);
+                    liftState = LiftState.GRIP_UP;
                     FirstUpdate = true;
                 }
                 if(gamepad1.dpad_down){
@@ -226,7 +225,9 @@ public class NEW_TELEOP extends OpMode {
                 wrist.setPosition(WRIST_UP);
                 pivotL.setPosition(PIVOTL_UP);
                 pivotR.setPosition(PIVOT_UP);
-                claw.setPosition(CLAW_OPEN);
+                if (scoreTimer.milliseconds() >= startTime + 200) {
+                    claw.setPosition(CLAW_OPEN);;
+                }
                    if (scoreTimer.milliseconds() >= startTime + 500) {
                        scoreTimer.reset();
                     liftState = LiftState.RESET;
@@ -248,7 +249,7 @@ public class NEW_TELEOP extends OpMode {
         //CODE FOR DRIVE TRAIN
         double y = gamepad1.left_stick_y; // Remember, this is reversed!
         double x = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
-        double rx = gamepad1.right_stick_x / 1.3;
+        double rx = gamepad1.right_stick_x / 1.2;
 
         // Denominator is the largest motor power (absolute value) or 1
         // This ensures all the powers maintain the same ratio, but only when
@@ -266,10 +267,10 @@ public class NEW_TELEOP extends OpMode {
         backRight.setPower(backRightPower);
 
         if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) > 50) {
-            frontLeft.setPower(frontLeftPower/1.5);
-            backLeft.setPower(backLeftPower/1.5);
-            frontRight.setPower(frontRightPower/1.5);
-            backRight.setPower(backRightPower/1.5);
+            frontLeft.setPower(frontLeftPower/1.3);
+            backLeft.setPower(backLeftPower/1.3);
+            frontRight.setPower(frontRightPower/1.3);
+            backRight.setPower(backRightPower/1.3);
         }
 
 

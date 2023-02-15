@@ -24,8 +24,6 @@ public class JUDGES extends OpMode {
 
     //CALCULATED NUMBER OF TICKS USED TO MOVE THE SLIDE 'X' INCHES
     final int LIFT_LEVEL_ORIGINAL = 0;
-    final int LIFT_LEVEL_ONE = (int) (FIRST_LEVEL_INCHES * COUNTS_PER_INCH);
-    final int LIFT_LEVEL_TWO = (int) (SECOND_LEVEL_INCHES * COUNTS_PER_INCH);
     final int LIFT_LEVEL_THREE = (int) (THIRD_LEVEL_INCHES * COUNTS_PER_INCH);
 
     //FINITE STATE MACHINE SETUP
@@ -162,37 +160,6 @@ public class JUDGES extends OpMode {
                 liftState = LiftState.RESET;
 
         }
-
-
-        //SAFETY BUTTON TO RESET THE SYSTEM BACK TO THE START
-
-        //CODE FOR DRIVE TRAIN
-        double y = gamepad1.left_stick_y; // Remember, this is reversed!
-        double x = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
-        double rx = gamepad1.right_stick_x / 1.3;
-
-        // Denominator is the largest motor power (absolute value) or 1
-        // This ensures all the powers maintain the same ratio, but only when
-        // at least one is out of the range [-1, 1]
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-        double frontLeftPower = (y + x + rx) / denominator;
-        double backLeftPower = (y - x + rx) / denominator;
-        double frontRightPower = (y - x - rx) / denominator;
-        double backRightPower = (y + x - rx) / denominator;
-
-        //divide by value greater than 1 to make it slower
-        frontLeft.setPower(frontLeftPower);
-        backLeft.setPower(backLeftPower);
-        frontRight.setPower(frontRightPower);
-        backRight.setPower(backRightPower);
-
-        if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) > 30) {
-            frontLeft.setPower(frontLeftPower/1.5);
-            backLeft.setPower(backLeftPower/1.5);
-            frontRight.setPower(frontRightPower/1.5);
-            backRight.setPower(backRightPower/1.5);
-        }
-
 
 
         telemetry.addData("State",liftState);
