@@ -47,12 +47,12 @@ public class JUDGES extends OpMode {
     public Servo pivotR;
     public Servo wrist;
 
-    final double CLAW_OPEN = 0.7;     // SERVO POSITION TO OPEN CLAW
-    final double CLAW_CLOSE = 1;    // SERVO POSITION TO CLOSE CLAW
+    final double CLAW_OPEN = 0.3;     // SERVO POSITION TO OPEN CLAW
+    final double CLAW_CLOSE = 0.08;    // SERVO POSITION TO CLOSE CLAW
     final double PIVOT_DOWN = 0;
     final double PIVOT_UP = 0.8;
-    final double WRIST_UP = 0.7;
-    final double WRIST_DOWN = 0.02;
+    final double WRIST_UP = 0.59;
+    final double WRIST_DOWN = 0.03;
 
     int liftTarget = LIFT_LEVEL_ORIGINAL;
 
@@ -122,7 +122,7 @@ public class JUDGES extends OpMode {
             case RESET:
                 pivotL.setPosition(1);
                 pivotR.setPosition(0);
-                claw.setPosition(CLAW_OPEN);
+                claw.setPosition(CLAW_CLOSE);
                 if (scoreTimer.milliseconds() >= startTime + 250) {
                    wrist.setPosition(WRIST_DOWN);
                 }
@@ -146,7 +146,7 @@ public class JUDGES extends OpMode {
                 liftTarget = LIFT_LEVEL_THREE;
                 wrist.setPosition(WRIST_UP);
 
-                if (scoreTimer.milliseconds() >= startTime + 3000) {
+                if (scoreTimer.milliseconds() >= startTime + 5000) {
                     scoreTimer.reset();
                     liftState = LiftState.RESET;
                     liftTarget = LIFT_LEVEL_ORIGINAL;

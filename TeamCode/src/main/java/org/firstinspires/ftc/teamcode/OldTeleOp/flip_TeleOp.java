@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Disabled
 @TeleOp
-public class    Official_Power_Play_TeleOp extends OpMode {
+public class flip_TeleOp extends OpMode {
 
     //SLIDER ENCODER CALCULATIONS
     static final double COUNTS_PER_MOTOR_REV = 103.8;        // TICKS PER REVOLUTION FOR 5203 1620RPM MOTOR
@@ -19,7 +19,7 @@ public class    Official_Power_Play_TeleOp extends OpMode {
     static final double PULLEY_HUB_DIAMETER_INCHES = 1.4;   // For figuring circumference
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (PULLEY_HUB_DIAMETER_INCHES * 3.1415);
-    static final double ARM_SPEED = 1;
+    static final double ARM_SPEED = 0.5;
     static final double FIRST_LEVEL_INCHES = 14;         // HEIGHT FOR FIRST LEVEL IN INCHES
     static final double SECOND_LEVEL_INCHES = 24;        // HEIGHT FOR SECOND LEVEL IN INCHES
     static final double THIRD_LEVEL_INCHES = 34;
@@ -40,8 +40,8 @@ public class    Official_Power_Play_TeleOp extends OpMode {
 
     //FINITE STATE MACHINE SETUP
     public enum LiftState {
-        LIFT_START, LIFT_EXTEND_ZERO, LIFT_IDLE, /* LIFT_EXTEND_ONE,
-        LIFT_EXTEND_TWO, LIFT_EXTEND_THREE,*/ LIFT_DROP, LIFT_EXTEND_ORIGINAL
+        LIFT_START, LIFT_EXTEND_ZERO, LIFT_IDLE, LIFT_EXTEND_ONE,
+        LIFT_EXTEND_TWO, LIFT_EXTEND_THREE,LIFT_DROP, LIFT_EXTEND_ORIGINAL
     }
 
     LiftState liftState = LiftState.LIFT_START;
@@ -53,11 +53,20 @@ public class    Official_Power_Play_TeleOp extends OpMode {
     public DcMotor backRight;
 
     //DECLARE MOTORS AND SERVOS FOR SLIDE
-    public DcMotor LIFT;               // MOTOR FOR THE SLIDE
-    public Servo claw;               // SERVO FOR THE CLAW
+    public DcMotor LIFT;// MOTOR FOR THE SLIDE
+    public DcMotor LIFT2;
+    public Servo claw;// SERVO FOR THE CLAW
+    public Servo pivotL;
+    public Servo pivotR;
+    public Servo wrist;
 
-    final double CLAW_OPEN = 0.6;     // SERVO POSITION TO OPEN CLAW
+    final double CLAW_OPEN = 0.5;     // SERVO POSITION TO OPEN CLAW
     final double CLAW_CLOSE = 1;    // SERVO POSITION TO CLOSE CLAW
+    final double PIVOT_DOWN = 0;
+    final double PIVOT_UP = 0.7;
+    final double WRIST_UP = 0.3;
+    final double WRIST_DOWN = 1;
+
 
     ElapsedTime dropTime = new ElapsedTime();
 
@@ -69,18 +78,29 @@ public class    Official_Power_Play_TeleOp extends OpMode {
         backRight = hardwareMap.dcMotor.get("rightRear");
 
         LIFT = hardwareMap.dcMotor.get("Lift");
-
+        LIFT2 = hardwareMap.dcMotor.get("Lift2");
         claw = hardwareMap.servo.get("claw");
+        pivotL = hardwareMap.servo.get("pivotL");
+        pivotR = hardwareMap.servo.get("pivotR");
+        wrist = hardwareMap.servo.get("wrist");
+
 
         //REVERSE MOTORS IF NECESSARY
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        LIFT2.setDirection(DcMotorSimple.Direction.REVERSE);
         //SETS THE ENCODERS ON THE SLIDE TO DEFAULT VALUES
         LIFT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         LIFT.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         LIFT.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LIFT2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        LIFT2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        LIFT2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
         //SETS THE CLAW IN DEFAULT POSITION
@@ -98,6 +118,7 @@ public class    Official_Power_Play_TeleOp extends OpMode {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
+
     public void loop() {
         switch (liftState) {
             case LIFT_START:
@@ -111,98 +132,104 @@ public class    Official_Power_Play_TeleOp extends OpMode {
             case LIFT_EXTEND_ZERO:
                 if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ZERO) < 10) {
                     LIFT.setPower(0);
+                    LIFT2.setPower(0);
                     liftState = LiftState.LIFT_IDLE;
                     telemetry.addData("Lift: ", LIFT.getCurrentPosition());
                 }
                 break;
             case LIFT_IDLE:
                 if (gamepad1.a) {
+                    wrist.setPosition(WRIST_UP);
+                    pivotL.setPosition(0.3);
+                    pivotR.setPosition(PIVOT_UP);
                     LIFT.setTargetPosition(LIFT_LEVEL_ONE);
+                    LIFT2.setTargetPosition(LIFT_LEVEL_ONE);
                     LIFT.setPower(ARM_SPEED);
+                    LIFT2.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                     liftState = LiftState.LIFT_DROP;
                 }
 
                 if (gamepad1.b) {
+                    wrist.setPosition(WRIST_UP);
+                    pivotL.setPosition(0.3);
+                    pivotR.setPosition(PIVOT_UP);
                     LIFT.setTargetPosition(LIFT_LEVEL_TWO);
+                    LIFT2.setTargetPosition(LIFT_LEVEL_TWO);
                     LIFT.setPower(ARM_SPEED);
+                    LIFT2.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
 
                     liftState = LiftState.LIFT_DROP;
                 }
 
                 if (gamepad1.y) {
+                    wrist.setPosition(WRIST_UP);
+                    pivotL.setPosition(0.3);
+                    pivotR.setPosition(PIVOT_UP);
                     LIFT.setTargetPosition(LIFT_LEVEL_THREE);
+                    LIFT2.setTargetPosition(LIFT_LEVEL_THREE);
                     LIFT.setPower(ARM_SPEED);
+                    LIFT2.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                     liftState = LiftState.LIFT_DROP;
                 }
-
-                if (gamepad1.dpad_left) {
-                    LIFT.setTargetPosition(STACK5);
-                    LIFT.setPower(ARM_SPEED);
-                    LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                    liftState = LiftState.LIFT_DROP;
-                }
-
-                if (gamepad1.dpad_right) {
-                    LIFT.setTargetPosition(STACK4);
-                    LIFT.setPower(ARM_SPEED);
-                    LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                    liftState = LiftState.LIFT_DROP;
-                }
-
                 break;
+
             case LIFT_DROP:
                 if (gamepad1.right_bumper) {
                     claw.setPosition(CLAW_OPEN);
-                    LIFT.setTargetPosition(LIFT_LEVEL_ORIGINAL);
-                    LIFT.setPower(ARM_SPEED/1.5);
-                    LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    liftState = LiftState.LIFT_EXTEND_ORIGINAL;
+
+                    liftState = LiftState.LIFT_EXTEND_ONE;
                 }
 
                 if (gamepad1.a) {
+                    pivotL.setPosition(PIVOT_UP);
+                    pivotR.setPosition(PIVOT_UP);
+                    wrist.setPosition(WRIST_UP);
                     LIFT.setTargetPosition(LIFT_LEVEL_ONE);
+                    LIFT2.setTargetPosition(LIFT_LEVEL_ONE);
                     LIFT.setPower(ARM_SPEED);
+                    LIFT2.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
 
                     liftState = LiftState.LIFT_DROP;
                 }
 
                 if (gamepad1.b) {
+                    pivotL.setPosition(PIVOT_UP);
+                    pivotR.setPosition(PIVOT_UP);
+                    wrist.setPosition(WRIST_UP);
                     LIFT.setTargetPosition(LIFT_LEVEL_TWO);
+                    LIFT2.setTargetPosition(LIFT_LEVEL_TWO);
                     LIFT.setPower(ARM_SPEED);
+                    LIFT2.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
 
                     liftState = LiftState.LIFT_DROP;
                 }
 
                 if (gamepad1.y) {
+                    pivotL.setPosition(PIVOT_UP);
+                    pivotR.setPosition(PIVOT_UP);
+                    wrist.setPosition(WRIST_UP);
                     LIFT.setTargetPosition(LIFT_LEVEL_THREE);
+                    LIFT2.setTargetPosition(LIFT_LEVEL_THREE);
                     LIFT.setPower(ARM_SPEED);
+                    LIFT2.setPower(ARM_SPEED);
                     LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                    liftState = LiftState.LIFT_DROP;
-                }
-
-                if (gamepad1.dpad_left) {
-                    LIFT.setTargetPosition(STACK5);
-                    LIFT.setPower(ARM_SPEED);
-                    LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                    liftState = LiftState.LIFT_DROP;
-                }
-
-                if (gamepad1.dpad_right) {
-                    LIFT.setTargetPosition(STACK4);
-                    LIFT.setPower(ARM_SPEED);
-                    LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                     liftState = LiftState.LIFT_DROP;
                 }
@@ -211,9 +238,31 @@ public class    Official_Power_Play_TeleOp extends OpMode {
             case LIFT_EXTEND_ORIGINAL:
                 if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) < 10) {
                     LIFT.setPower(0);
+                    LIFT2.setPower(0);
                     liftState = LiftState.LIFT_START;
                     telemetry.addData("Lift: ", LIFT.getCurrentPosition());
                 }
+
+            case LIFT_EXTEND_ONE: {
+
+
+                liftState = LiftState.LIFT_EXTEND_TWO;
+            }
+
+            case LIFT_EXTEND_TWO:
+                if (claw.equals(CLAW_OPEN)){
+                pivotR.setPosition(0);
+                LIFT.setTargetPosition(LIFT_LEVEL_ORIGINAL);
+                LIFT2.setTargetPosition(LIFT_LEVEL_ORIGINAL);
+                LIFT.setPower(ARM_SPEED / 1.5);
+                LIFT2.setPower(ARM_SPEED / 1.5);
+                LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                wrist.setPosition(WRIST_DOWN);
+
+                liftState = LiftState.LIFT_EXTEND_ORIGINAL;
+            }
+
 
                 break;
 
@@ -226,10 +275,16 @@ public class    Official_Power_Play_TeleOp extends OpMode {
         //SAFETY BUTTON TO RESET THE SYSTEM BACK TO THE START
         if (gamepad1.x && liftState != LiftState.LIFT_START) {
             claw.setPosition(CLAW_OPEN);
+            pivotL.setPosition(1);
+            pivotR.setPosition(0);
             LIFT.setTargetPosition(LIFT_LEVEL_ORIGINAL);
+            LIFT2.setTargetPosition(LIFT_LEVEL_ORIGINAL);
             LIFT.setPower(ARM_SPEED);
+            LIFT2.setPower(ARM_SPEED);
             LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            liftState = LiftState.LIFT_START;
+            LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            wrist.setPosition(WRIST_DOWN);
+
         }
 
         //CODE FOR DRIVE TRAIN
@@ -252,10 +307,9 @@ public class    Official_Power_Play_TeleOp extends OpMode {
         frontRight.setPower(-frontRightPower/1.1);
         backRight.setPower(-backRightPower/1.1);
 
-        telemetry.addData("Currently at",  " at %7d :%7d",
-               frontLeft.getCurrentPosition(), frontRight.getCurrentPosition(),backLeft.getCurrentPosition(), backRight.getCurrentPosition());
+        telemetry.addData("State",liftState);
         telemetry.update();
+
     }
 
 }
-

@@ -4,6 +4,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
+import com.noahbres.meepmeep.roadrunner.SampleMecanumDrive;
 import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 import java.util.Vector;
@@ -14,64 +15,55 @@ public class MeepMeepTesting {
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setDimensions(17.5,16)
+                .setDimensions(16,16)
                 .setConstraints(55, 55, 15, 15, 15)
 
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(35, -64, Math.toRadians(90) ))
-
-
-                                .lineToSplineHeading(new Pose2d(35, -8, Math.toRadians(90)))
-                                .lineToSplineHeading(new Pose2d(31, -16, Math.toRadians(45)))
-
-
-
-                                .waitSeconds(0.3)
-                                //Second Cone
-                                .splineTo(new Vector2d(45, -13), Math.toRadians(0))
-                                .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
-
+                        drive.trajectorySequenceBuilder(new Pose2d(-35, -70, Math.toRadians(270)))
+                                .lineToSplineHeading(new Pose2d(-35, -48, Math.toRadians(270)))
+                                .splineTo(new Vector2d(-18, -40), Math.toRadians(0))
+                                .splineTo(new Vector2d(-4, -28), Math.toRadians(45))
                                 .waitSeconds(0.3)
 
-                                .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
-                                .splineTo(new Vector2d(31, -16), Math.toRadians(225))
-                                .waitSeconds(0.3)
-                                .splineTo(new Vector2d(45, -13), Math.toRadians(0))
-                                .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
+                                .lineToLinearHeading(new Pose2d(-12, -16, Math.toRadians(180)))
+                                .lineToLinearHeading(new Pose2d(-59, -15, Math.toRadians(180)))
+                                .waitSeconds(0.2)
 
-                                .waitSeconds(0.3)
-
-                                .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
-                                .splineTo(new Vector2d(31, -16), Math.toRadians(225))
+                                .lineToLinearHeading(new Pose2d(-25, -15, Math.toRadians(180)))
+                                .splineTo(new Vector2d(-3, -25), Math.toRadians(-45))
                                 .waitSeconds(0.3)
 
-                                .splineTo(new Vector2d(45, -13), Math.toRadians(0))
-                                .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
+                                .splineTo(new Vector2d(-25, -15), Math.toRadians(180))
+                                .lineToLinearHeading(new Pose2d(-59.5, -15, Math.toRadians(180)))
+                                .waitSeconds(0.2)
+                                .lineToLinearHeading(new Pose2d(-30, -15, Math.toRadians(180)))
+                                .splineTo(new Vector2d(-3, -25), Math.toRadians(-45))
                                 .waitSeconds(0.3)
 
-                                .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
-                                .splineTo(new Vector2d(31, -16), Math.toRadians(225))
+
+                                .splineTo(new Vector2d(-25, -15), Math.toRadians(180))
+                                .lineToLinearHeading(new Pose2d(-59.5, -15, Math.toRadians(180)))
+                                .waitSeconds(0.2)
+                                .lineToLinearHeading(new Pose2d(-30, -15, Math.toRadians(180)))
+                                .splineTo(new Vector2d(-5, -18), Math.toRadians(-45))
                                 .waitSeconds(0.3)
 
-                                .splineTo(new Vector2d(45, -13), Math.toRadians(0))
-                                .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
 
+                                .splineTo(new Vector2d(-25, -15), Math.toRadians(180))
+                                .lineToLinearHeading(new Pose2d(-59.5, -15, Math.toRadians(180)))
+                                .waitSeconds(0.2)
+                                .lineToLinearHeading(new Pose2d(-30, -15, Math.toRadians(180)))
+                                .splineTo(new Vector2d(-5, -18), Math.toRadians(-45))
                                 .waitSeconds(0.3)
 
-                                .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
-                                .splineTo(new Vector2d(31, -16), Math.toRadians(225))
+
+                                .splineTo(new Vector2d(-20, -15), Math.toRadians(180))
+                                .lineToLinearHeading(new Pose2d(-59.5, -15, Math.toRadians(180)))
+                                .waitSeconds(0.2)
+                                .lineToLinearHeading(new Pose2d(-30, -15, Math.toRadians(180)))
+                                .splineTo(new Vector2d(-5, -18), Math.toRadians(-45))
                                 .waitSeconds(0.3)
-
-                                .splineTo(new Vector2d(45, -13), Math.toRadians(0))
-                                .lineToLinearHeading(new Pose2d(60, -13, Math.toRadians(0)))
-
-                                .waitSeconds(0.3)
-
-                                .lineToLinearHeading(new Pose2d(45, -13, Math.toRadians(0)))
-                                .splineTo(new Vector2d(31, -16), Math.toRadians(225))
-                                .waitSeconds(0.3)
-
 
                                 .build());
 
@@ -79,8 +71,74 @@ public class MeepMeepTesting {
 
 
 
+
+
+
+
+
+
+
+/*
+                                .lineToSplineHeading(new Pose2d(-35, 0, Math.toRadians(180)))
+                                .lineToSplineHeading(new Pose2d(-31, -16, Math.toRadians(135)))
+
+
+
+                                .waitSeconds(0.3)
+                                //Second Cone
+                                .splineTo(new Vector2d(-45, -13), Math.toRadians(180))
+                                .lineToLinearHeading(new Pose2d(-60, -13, Math.toRadians(180)))
+
+                                .waitSeconds(0.3)
+
+                                .lineToLinearHeading(new Pose2d(-45, -13, Math.toRadians(180)))
+                                .splineTo(new Vector2d(-31, -16), Math.toRadians(315))
+                                .waitSeconds(0.3)
+                                .splineTo(new Vector2d(-45, -13), Math.toRadians(180))
+                                .lineToLinearHeading(new Pose2d(-60, -13, Math.toRadians(180)))
+
+                                .waitSeconds(0.3)
+
+                                .lineToLinearHeading(new Pose2d(-45, -13, Math.toRadians(180)))
+                                .splineTo(new Vector2d(-31, -16), Math.toRadians(315))
+                                .waitSeconds(0.3)
+
+                                .splineTo(new Vector2d(-45, -13), Math.toRadians(180))
+                                .lineToLinearHeading(new Pose2d(-60, -13, Math.toRadians(180)))
+
+                                .waitSeconds(0.3)
+
+                                .lineToLinearHeading(new Pose2d(-45, -13, Math.toRadians(180)))
+                                .splineTo(new Vector2d(-31, -16), Math.toRadians(315))
+                                .waitSeconds(0.3)
+
+                                .splineTo(new Vector2d(-45, -13), Math.toRadians(180))
+                                .lineToLinearHeading(new Pose2d(-60, -13, Math.toRadians(180)))
+
+                                .waitSeconds(0.3)
+
+                                .lineToLinearHeading(new Pose2d(-45, -13, Math.toRadians(180)))
+                                .splineTo(new Vector2d(-31, -16), Math.toRadians(315))
+                                .waitSeconds(0.3)
+
+                                .splineTo(new Vector2d(-45, -13), Math.toRadians(180))
+                                .lineToLinearHeading(new Pose2d(-60, -13, Math.toRadians(180)))
+
+                                .waitSeconds(0.3)
+
+                                .lineToLinearHeading(new Pose2d(-45, -13, Math.toRadians(180)))
+                                .splineTo(new Vector2d(-31, -16), Math.toRadians(315))
+                                .waitSeconds(0.3)*/
+
+
+
+
+
+
+
+
                                 /*
-                                .lineToSplineHeading(new Pose2d(-35, -13, Math.toRadians(0)))
+                                .lineToSplineHeading(new Pose2d(-35, -13, Math.toRadians(180)))
 
                                 .splineToConstantHeading(new Vector2d(-61, -13), Math.toRadians(0))
                                 .waitSeconds(0.4)
@@ -128,47 +186,47 @@ public class MeepMeepTesting {
                                 /*
                                 .splineTo(new Vector2d(35, -21), Math.toRadians(90))
 
-                                .splineTo(new Vector2d(27, -3), Math.toRadians(135))
+                                .splineTo(new Vector2d(27, -3), Math.toRadians(315))
 
                                 .waitSeconds(0.3)
-                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(135)))
+                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(315)))
                                 .turn(Math.toRadians(-135))
 
                                 .lineToSplineHeading(new Pose2d(57, -10, Math.toRadians(0)))
 
                                 .waitSeconds(0.5)
-                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(135)))
-                                .lineToLinearHeading(new Pose2d(27, -3, Math.toRadians(135)))
+                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(315)))
+                                .lineToLinearHeading(new Pose2d(27, -3, Math.toRadians(315)))
 
 
                                 .waitSeconds(0.3)
-                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(135)))
+                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(315)))
                                 .lineToSplineHeading(new Pose2d(57, -11, Math.toRadians(0)))
 
                                 .waitSeconds(0.5)
-                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(135)))
-                                .lineToLinearHeading(new Pose2d(27.5, -4, Math.toRadians(135)))
+                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(315)))
+                                .lineToLinearHeading(new Pose2d(27.5, -4, Math.toRadians(315)))
 
 
                                 .waitSeconds(0.3)
-                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(135)))
+                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(315)))
                                 .lineToSplineHeading(new Pose2d(57, -11, Math.toRadians(0)))
 
                                 .waitSeconds(0.5)
-                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(135)))
-                                .lineToLinearHeading(new Pose2d(28, -4, Math.toRadians(135)))
+                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(315)))
+                                .lineToLinearHeading(new Pose2d(28, -4, Math.toRadians(315)))
 
 
                                 .waitSeconds(0.3)
-                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(135)))
+                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(315)))
                                 .lineToSplineHeading(new Pose2d(57, -11, Math.toRadians(0)))
 
                                 .waitSeconds(0.5)
-                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(135)))
-                                .lineToLinearHeading(new Pose2d(28, -4, Math.toRadians(135)))
+                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(315)))
+                                .lineToLinearHeading(new Pose2d(28, -4, Math.toRadians(315)))
 
                                 .waitSeconds(0.3)
-                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(135)))
+                                .lineToLinearHeading(new Pose2d(35, -10, Math.toRadians(315)))
                                 .lineToSplineHeading(new Pose2d(57, -11, Math.toRadians(0)))
 
 
