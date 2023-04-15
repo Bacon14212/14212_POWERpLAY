@@ -4,9 +4,11 @@ package org.firstinspires.ftc.teamcode.WORLDS;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -31,11 +33,14 @@ public class Worlds_TeleOp extends OpMode {
 
     //FINITE STATE MACHINE SETUP
     public enum LiftState {
-        Intake_Normal,Gripped_Normal,Driving_Around,Lift_Wait,Ready_To_Score,Lift_Lower,Open_Claw,
-        Intake_Down_1,Intake_Down_2,Gripped_Down_1,Gripped_Down_2,Raising_Wrist
+        Intake_Normal, Gripped_Normal, Driving_Around, Lift_Wait, Ready_To_Score, Lift_Lower, Open_Claw,
+        Intake_Down_1, Intake_Down_2, Gripped_Down_1, Gripped_Down_2, Raising_Wrist, RESET
     }
 
     LiftState liftState = LiftState.Intake_Normal;
+
+    boolean FRONT_INTAKE = true;
+    boolean dpadDownLastUpdate = false;
 
     //DECLARE MOTORS FOR DRIVETRAIN
     public DcMotor frontLeft;
@@ -55,17 +60,17 @@ public class Worlds_TeleOp extends OpMode {
     final double CLAW_OPEN = 0.38;     // SERVO POSITION TO OPEN CLAW
     final double CLAW_CLOSE = 0.24;    // SERVO POSITION TO CLOSE CLAW
     final double PIVOT_DOWN_FRONT = 1;
-    final double PIVOT_DOWN_BACK = 0.1;
-    final double PIVOT_UP_FRONT = 0.46;
+    final double PIVOT_DOWN_BACK = 0.08;
+    final double PIVOT_UP_FRONT = 0.47;
     final double PIVOT_UP_BACK = 0.65;
     final double TWIST_UP_BACK = 0.3;
-    final double TWIST_UP_FRONT = 0.28;
+    final double TWIST_UP_FRONT = 0.3;
     final double TWIST_DOWN_FRONT = 0.98;
-    final double TWIST_DOWN_BACK = 0;
-    final double FLIP_UP_FRONT = 0.28;
+    final double TWIST_DOWN_BACK = 0.3;
+    final double FLIP_UP_FRONT = 0.25;
     final double FLIP_UP_BACK = 0.29;
-    final double FLIP_DOWN_FRONT = 0.37;
-    final double FLIP_DOWN_BACK = 0;
+    final double FLIP_DOWN_FRONT = 0.35;
+    final double FLIP_DOWN_BACK = 0.62;
     final double PIVOT_MID = 0.75;
 
     int liftTarget = 0;
@@ -124,13 +129,20 @@ public class Worlds_TeleOp extends OpMode {
         claw.setPosition(CLAW_OPEN);
         flip.setPosition(FLIP_DOWN_FRONT);
         wrist.setPosition(TWIST_DOWN_FRONT);
+
     }
+    double PivotL_Position = 0;
+    double PivotR_Position = 0;
+    double claw_Position = 0;
+    double flip_Position = 0;
+    double wrist_Position = 0;
 
     boolean FirstUpdate = true;
-    double startTime = 0;
     ElapsedTime scoreTimer = new ElapsedTime();
 
     public void loop() {
+
+
         /*
         if (liftState == LiftState.RESET){
             lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
@@ -153,75 +165,85 @@ public class Worlds_TeleOp extends OpMode {
         LIFT2.setPower(ARM_SPEED);
         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) < 10) {
+            LIFT.setPower(0);
+            LIFT2.setPower(0);
+        }
 
         switch (liftState) {
             //Drops Lift, claw open, pivot down
             case Intake_Normal:
                 liftTarget = (LIFT_LEVEL_ORIGINAL);
-                pivotL.setPosition(PIVOT_DOWN_FRONT);
-                pivotR.setPosition(PIVOT_DOWN_FRONT);
-                claw.setPosition(CLAW_OPEN);
-                flip.setPosition(FLIP_DOWN_FRONT);
-                wrist.setPosition(TWIST_DOWN_FRONT);
+                PivotL_Position = PIVOT_DOWN_FRONT;
+                PivotR_Position = PIVOT_DOWN_FRONT;
+                claw_Position = CLAW_OPEN;
+                flip_Position = FLIP_DOWN_FRONT;
+                wrist_Position = TWIST_DOWN_FRONT;
 
                 //Sets Lift motors to 0 power
-                if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) < 5) {
-                    LIFT.setPower(0);
-                    LIFT2.setPower(0);
-                }
 
                 //Grab a cone
-                if(gamepad1.left_bumper){
+                if (gamepad1.left_bumper) {
                     scoreTimer.reset();
                     liftState = LiftState.Gripped_Normal;
                     FirstUpdate = true;
                 }
-                if(gamepad1.dpad_left){
+                if (gamepad1.dpad_left) {
                     scoreTimer.reset();
                     liftState = LiftState.Intake_Down_2;
                     FirstUpdate = true;
                 }
-                if(gamepad1.dpad_right){
+                if (gamepad1.dpad_right) {
                     scoreTimer.reset();
                     liftState = LiftState.Intake_Down_1;
                     FirstUpdate = true;
                 }
+                if (gamepad1.left_stick_button) {
 
-                FirstUpdate=false;
+                }
+
+                FirstUpdate = false;
                 break;
             case Gripped_Normal:
-                if (gamepad1.left_trigger > 0.1){
+                claw_Position = CLAW_CLOSE;
+                if (gamepad1.left_trigger > 0.1) {
                     scoreTimer.reset();
                     liftState = LiftState.Driving_Around;
                     FirstUpdate = true;
 
                 }
                 //Sets arm up after 0.5 seconds
-                claw.setPosition(CLAW_CLOSE);
-                if (scoreTimer.milliseconds() >= startTime + 500) {
-                    flip.setPosition(0.2);
-                    wrist.setPosition(TWIST_UP_FRONT);
-                    pivotL.setPosition(PIVOT_MID);
-                    pivotR.setPosition(PIVOT_MID);
+                if (scoreTimer.milliseconds() >= 500) {
+                    flip_Position = 0.2;
+                    wrist_Position = TWIST_UP_FRONT;
+                    PivotL_Position = PIVOT_MID;
+                    PivotR_Position = PIVOT_MID;
                 }
-                if (gamepad1.right_bumper){
-                    wrist.setPosition(TWIST_DOWN_FRONT);
-                    if (scoreTimer.milliseconds() >= startTime + 500) {
-                        scoreTimer.reset();
-                        liftState = LiftState.Intake_Normal;
-                        FirstUpdate = true;
-                    }
+                if (gamepad1.right_bumper) {
+                    wrist_Position = TWIST_DOWN_FRONT;
+                    scoreTimer.reset();
+                    liftState = LiftState.RESET;
+                    FirstUpdate = true;
                 }
 
                 FirstUpdate = false;
                 break;
 
+            case RESET:
+                if (scoreTimer.milliseconds() >= 200) {
+                    flip_Position = 0.2;
+                    scoreTimer.reset();
+                    liftState = LiftState.Intake_Normal;
+                    FirstUpdate = true;
+                }
+                FirstUpdate = false;
+                break;
+
             case Driving_Around:
-                claw.setPosition(CLAW_CLOSE);
                 if (gamepad1.a || gamepad1.b || gamepad1.y) {
                     liftState = LiftState.Ready_To_Score;
-                    wrist.setPosition(TWIST_UP_BACK);
-                    flip.setPosition(FLIP_UP_BACK);
+                    flip_Position = FLIP_UP_FRONT;
+                    wrist_Position = TWIST_UP_FRONT;
                     FirstUpdate = true;
                     scoreTimer.reset();
                 }
@@ -230,28 +252,28 @@ public class Worlds_TeleOp extends OpMode {
                 break;
 
             case Ready_To_Score:
-                if(gamepad1.a){
+                if (gamepad1.a) {
                     liftTarget = LIFT_LEVEL_ONE;
                 }
-                if(gamepad1.b){
+                if (gamepad1.b) {
                     liftTarget = LIFT_LEVEL_TWO;
                 }
-                if(gamepad1.y){
+                if (gamepad1.y) {
                     liftTarget = LIFT_LEVEL_THREE;
                 }
-                pivotL.setPosition(PIVOT_UP_FRONT);
-                pivotR.setPosition(PIVOT_UP_FRONT);
-                flip.setPosition(FLIP_UP_FRONT);
-                if(gamepad1.right_bumper){
+                PivotL_Position = PIVOT_UP_FRONT;
+                PivotR_Position = PIVOT_UP_FRONT;
+                flip_Position = FLIP_UP_FRONT;
+                if (gamepad1.right_bumper) {
                     scoreTimer.reset();
                     liftState = LiftState.Lift_Lower;
                     FirstUpdate = true;
                 }
-                if (gamepad1.dpad_left){
-                    wrist.setPosition(TWIST_DOWN_FRONT);
+                if (gamepad1.dpad_left) {
+                    wrist_Position = TWIST_DOWN_FRONT;
                 }
-                if (gamepad1.dpad_right){
-                    wrist.setPosition(TWIST_UP_FRONT);
+                if (gamepad1.dpad_right) {
+                    wrist_Position = TWIST_UP_FRONT;
                 }
 
                 FirstUpdate = false;
@@ -259,23 +281,23 @@ public class Worlds_TeleOp extends OpMode {
 
             case Lift_Lower:
                 liftTarget = (LIFT.getCurrentPosition() - 100);
-                flip.setPosition(0.3);
-                pivotL.setPosition(0.35);
-                pivotR.setPosition(0.35);
+                flip_Position = 0.28;
+                PivotL_Position = 0.4;
+                PivotR_Position = 0.4;
 
-                if (scoreTimer.milliseconds() >= startTime + 200) {
-                liftState = LiftState.Open_Claw;
-                scoreTimer.reset();
-                FirstUpdate = true;
-            }
+                if (scoreTimer.milliseconds() >= 200) {
+                    liftState = LiftState.Open_Claw;
+                    scoreTimer.reset();
+                    FirstUpdate = true;
+                }
 
                 FirstUpdate = false;
                 break;
 
             case Open_Claw:
-                claw.setPosition(CLAW_OPEN);
-                if (scoreTimer.milliseconds() >= startTime + 200) {
-                    wrist.setPosition(TWIST_DOWN_FRONT);
+                claw_Position = CLAW_OPEN;
+                if (scoreTimer.milliseconds() >= 200 && gamepad1.left_stick_y > 0.15) {
+                    wrist_Position = TWIST_DOWN_FRONT;
                     liftState = LiftState.Intake_Normal;
                     scoreTimer.reset();
                     FirstUpdate = true;
@@ -284,38 +306,36 @@ public class Worlds_TeleOp extends OpMode {
                 break;
 
             case Intake_Down_1:
-                pivotL.setPosition(0.8);
-                pivotR.setPosition(0.8);
-                claw.setPosition(CLAW_OPEN);
-                flip.setPosition(0.92);
-                wrist.setPosition(TWIST_DOWN_FRONT);
-                if (gamepad1.left_bumper){
-                    flip.setPosition(0.86);
+                PivotL_Position = 0.8;
+                PivotR_Position = 0.8;
+                claw_Position = CLAW_OPEN;
+                flip_Position = 0.94;
+                wrist_Position = TWIST_DOWN_FRONT;
+                if (gamepad1.left_bumper) {
+                    flip_Position = 0.85;
                     scoreTimer.reset();
                     liftState = LiftState.Intake_Down_2;
                     FirstUpdate = true;
                 }
                 if (gamepad1.right_bumper) {
-                    flip.setPosition(FLIP_DOWN_FRONT);
-                    if (scoreTimer.milliseconds() >= startTime + 1000) {
-                        scoreTimer.reset();
-                        liftState = LiftState.Intake_Normal;
-                        FirstUpdate = true;
-                    }
-                }
+                    flip_Position = FLIP_DOWN_FRONT;
+                    scoreTimer.reset();
+                    liftState = LiftState.RESET;
+                    FirstUpdate = true;
 
+                }
 
                 FirstUpdate = false;
                 break;
 
             case Intake_Down_2:
-                if (scoreTimer.milliseconds() >= startTime + 100) {
-                    pivotL.setPosition(0.87);
-                    pivotR.setPosition(0.87);
-                    claw.setPosition(CLAW_CLOSE);
+                if (scoreTimer.milliseconds() >= 100) {
+                    PivotL_Position = 0.85;
+                    PivotR_Position = 0.85;
+                    claw_Position = CLAW_CLOSE;
                 }
-                if (scoreTimer.milliseconds() >= startTime + 500) {
-                    wrist.setPosition(TWIST_UP_FRONT);
+                if (scoreTimer.milliseconds() >= 500) {
+                    wrist_Position = TWIST_UP_FRONT;
                     liftState = LiftState.Ready_To_Score;
                     scoreTimer.reset();
                     FirstUpdate = true;
@@ -323,126 +343,30 @@ public class Worlds_TeleOp extends OpMode {
                 FirstUpdate = false;
                 break;
 
-
-
-
-
-
-               /* if (gamepad1.a || gamepad1.b || gamepad1.y) {
-                    liftState = LiftState.GRIP_UP;
-                    wrist.setPosition(TWIST_UP_BACK);
-                    flip.setPosition(FLIP_UP_BACK);
-                    FirstUpdate = true;
-                }
-                while (liftState == LiftState.BACK) {
-                    if (gamepad1.a || gamepad1.b || gamepad1.y) {
-                        liftState = LiftState.GRIP_UP;
-                        wrist.setPosition(TWIST_UP_FRONT);
-                        flip.setPosition(FLIP_UP_FRONT);
-                        FirstUpdate = true;
-                    }
-                }
-                //Safety button that resets everything
-                if(gamepad1.x){
-                    liftState = LiftState.RESET;
-                    FirstUpdate = true;
-                }
-                FirstUpdate=false;
-                break;
-
-            case GRIP_UP:
-
-                if(gamepad1.a){
-                    liftTarget = LIFT_LEVEL_ONE;
-                }
-                if(gamepad1.b){
-                    liftTarget = LIFT_LEVEL_TWO;
-                }
-                if(gamepad1.y){
-                    liftTarget = LIFT_LEVEL_THREE;
-                }
-
-                while (liftState == LiftState.FRONT) {
-                        liftState = LiftState.GRIP_UP;
-                        wrist.setPosition(TWIST_UP_FRONT);
-                        flip.setPosition(FLIP_UP_FRONT);
-                        FirstUpdate = true;
-                }
-                //Sets arm up to an angle to use the aligner
-                pivotL.setPosition(0.25);
-                pivotR.setPosition(0.75);
-
-                //Opens Claw
-                if(gamepad1.right_bumper){
-                    scoreTimer.reset();
-                    liftState = LiftState.OPEN_CLAW;
-                    FirstUpdate = true;
-                }
-
-
-                FirstUpdate = false;
-                break;
-
-            case ORIGINAL:
-                break;
-            case FRONT:
-                claw.setPosition(CLAW_CLOSE);
-                pivotL.setPosition(1);
-                pivotR.setPosition(0);
-                wrist.setPosition(WRIST_DOWN);
-                if(gamepad1.left_bumper){
-                    scoreTimer.reset();
-                    liftState = LiftState.GRIP_UP;
-                    FirstUpdate = true;
-                }
-                if(gamepad1.dpad_down){
-                    claw.setPosition(CLAW_OPEN);
-                    liftState = LiftState.FRONT;
-                    FirstUpdate = true;
-                }
-                if(gamepad1.right_bumper){
-                    scoreTimer.reset();
-                    liftTarget = LIFT_LEVEL_ORIGINAL;
-                    liftState = LiftState.RESET;
-                    FirstUpdate = true;
-                }
-                if(gamepad1.a){
-                    liftTarget = LIFT_LEVEL_ONE + 400;
-                }
-                if(gamepad1.b){
-                    liftTarget = LIFT_LEVEL_TWO + 400;
-                }
-                if(gamepad1.y){
-                    liftTarget = LIFT_LEVEL_THREE + 400;
-                }
-
-                FirstUpdate = false;
-                break;
-
-            case OPEN_CLAW:
-                liftTarget = LIFT.getCurrentPosition() - 50;
-                wrist.setPosition(WRIST_UP);
-                pivotL.setPosition(PIVOTL_UP);
-                pivotR.setPosition(PIVOTR_UP);
-                if (scoreTimer.milliseconds() >= startTime + 100) {
-                    claw.setPosition(CLAW_OPEN);
-                }
-                if (scoreTimer.milliseconds() >= startTime + 500) {
-                    scoreTimer.reset();
-                    liftState = LiftState.RESET;
-                    liftTarget = LIFT_LEVEL_ORIGINAL;
-                    FirstUpdate = true;
-                }
-
-                FirstUpdate = false;
-                break;
-
-            case BACK:*/
-
             default:
                 liftState = LiftState.Intake_Normal;
 
         }
+
+        double PivotL_Position_Mirrored = PIVOT_DOWN_FRONT - (PivotL_Position - PIVOT_DOWN_BACK);
+        double PivotR_Position_Mirrored = PIVOT_DOWN_FRONT - (PivotR_Position - PIVOT_DOWN_BACK);
+        double wrist_Position_Mirrored = TWIST_DOWN_FRONT - (wrist_Position - TWIST_DOWN_BACK);
+        double flip_Position_Mirrored = FLIP_DOWN_BACK - (flip_Position - FLIP_DOWN_FRONT);
+
+        if (FRONT_INTAKE) {
+            pivotL.setPosition(PivotL_Position);
+            pivotR.setPosition(PivotR_Position);
+            wrist.setPosition(wrist_Position);
+            flip.setPosition(flip_Position);
+        } else {
+            pivotL.setPosition(PivotL_Position_Mirrored);
+            pivotR.setPosition(PivotR_Position_Mirrored);
+            wrist.setPosition(wrist_Position_Mirrored);
+            flip.setPosition(flip_Position_Mirrored);
+        }
+
+        claw.setPosition(claw_Position);
+
 
         //SAFETY BUTTON TO RESET THE SYSTEM BACK TO THE START
 
@@ -450,6 +374,11 @@ public class Worlds_TeleOp extends OpMode {
         double y = gamepad1.left_stick_y; // Remember, this is reversed!
         double x = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
         double rx = gamepad1.right_stick_x / 1.2;
+        if (!FRONT_INTAKE) {
+            y *= -1; // Remember, this is reversed!
+            x *= -1;
+            rx *= 1;
+        }
 
         // Denominator is the largest motor power (absolute value) or 1
         // This ensures all the powers maintain the same ratio, but only when
@@ -467,20 +396,36 @@ public class Worlds_TeleOp extends OpMode {
         backRight.setPower(backRightPower);
 
         if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) > 50) {
-            frontLeft.setPower(frontLeftPower/1.2);
-            backLeft.setPower(backLeftPower/1.2);
-            frontRight.setPower(frontRightPower/1.2);
-            backRight.setPower(backRightPower/1.2);
+            frontLeft.setPower(frontLeftPower / 1.2);
+            backLeft.setPower(backLeftPower / 1.2);
+            frontRight.setPower(frontRightPower / 1.2);
+            backRight.setPower(backRightPower / 1.2);
         }
 
-        telemetry.addData("State",liftState);
+        telemetry.addData("State", liftState);
         telemetry.addData("Lift Position, Motor 1", LIFT.getCurrentPosition());
         telemetry.addData("Lift Position, Motor 2", LIFT2.getCurrentPosition());
+        telemetry.addData("Wrist", wrist_Position);
+        telemetry.addData("PivotL", PivotL_Position);
+        telemetry.addData("PivotR", PivotR_Position);
+        telemetry.addData("flip", flip_Position);
+        telemetry.addData("INtake", FRONT_INTAKE);
+
         telemetry.addLine();
         telemetry.update();
         getRuntime();
 
+        if(!dpadDownLastUpdate && gamepad1.dpad_down) {
+            if (FRONT_INTAKE) {
+                FRONT_INTAKE = false;
+            } else {
+                FRONT_INTAKE = true;
+            }
+        }
+        dpadDownLastUpdate = gamepad1.dpad_down;
+
     }
+
 
 }
 
