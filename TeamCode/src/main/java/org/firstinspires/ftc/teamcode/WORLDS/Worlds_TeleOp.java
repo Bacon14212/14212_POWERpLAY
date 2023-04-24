@@ -1,14 +1,10 @@
-
 package org.firstinspires.ftc.teamcode.WORLDS;
 
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -34,7 +30,7 @@ public class Worlds_TeleOp extends OpMode {
     //FINITE STATE MACHINE SETUP
     public enum LiftState {
         Intake_Normal, Gripped_Normal, Driving_Around, Lift_Wait, Ready_To_Score, Lift_Lower, Open_Claw,
-        Intake_Down_1, Intake_Down_2, Gripped_Down_1, Gripped_Down_2, Raising_Wrist, RESET
+        Intake_Down_1, Intake_Down_2, Gripped_Down_1, Gripped_Down_2, Raising_Wrist, RESET, Ground, Ground_Drop, Beacon, Beacon_Drop
     }
 
     LiftState liftState = LiftState.Intake_Normal;
@@ -57,26 +53,22 @@ public class Worlds_TeleOp extends OpMode {
     public Servo flip; // SERVO FOR WRIST UP DOWN
     public Servo claw; // SERVO FOR THE CLAW
 
-    final double CLAW_OPEN = 0.38;     // SERVO POSITION TO OPEN CLAW
-    final double CLAW_CLOSE = 0.24;    // SERVO POSITION TO CLOSE CLAW
+    final double CLAW_OPEN = 0.43;     // SERVO POSITION TO OPEN CLAWjk
+    final double CLAW_CLOSE = 0.32;    // SERVO POSITION TO CLOSE CLAW
     final double PIVOT_DOWN_FRONT = 1;
     final double PIVOT_DOWN_BACK = 0.08;
     final double PIVOT_UP_FRONT = 0.47;
-    final double PIVOT_UP_BACK = 0.65;
-    final double TWIST_UP_BACK = 0.3;
-    final double TWIST_UP_FRONT = 0.3;
+    final double TWIST_UP_FRONT = 0.42;
     final double TWIST_DOWN_FRONT = 0.98;
-    final double TWIST_DOWN_BACK = 0.3;
+    final double TWIST_DOWN_BACK = 0.42;
     final double FLIP_UP_FRONT = 0.25;
-    final double FLIP_UP_BACK = 0.29;
-    final double FLIP_DOWN_FRONT = 0.35;
+    final double FLIP_DOWN_FRONT = 0.34;
     final double FLIP_DOWN_BACK = 0.62;
     final double PIVOT_MID = 0.75;
 
     int liftTarget = 0;
 
     ElapsedTime dropTime = new ElapsedTime();
-//    RevBlinkinLedDriver lights;
 
     public void init() {
         //INITIALIZES ALL MOTORS AND DEFAULTS SETTINGS
@@ -93,25 +85,16 @@ public class Worlds_TeleOp extends OpMode {
         pivotR = hardwareMap.servo.get("pivotR");
         wrist = hardwareMap.servo.get("wrist");
         flip = hardwareMap.servo.get("flip");
-//        lights = hardwareMap.get(RevBlinkinLedDriver.class, "Lights");
-//        lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
 
         //REVERSE MOTORS IF NECESSARY
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         LIFT2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        //SETS THE ENCODERS ON THE SLIDE TO DEFAULT VALUES
-        LIFT.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        LIFT2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         LIFT.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         LIFT2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
         LIFT.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         LIFT2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-
         frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -131,6 +114,8 @@ public class Worlds_TeleOp extends OpMode {
         wrist.setPosition(TWIST_DOWN_FRONT);
 
     }
+
+    //Servo Defaults
     double PivotL_Position = 0;
     double PivotR_Position = 0;
     double claw_Position = 0;
@@ -141,23 +126,6 @@ public class Worlds_TeleOp extends OpMode {
     ElapsedTime scoreTimer = new ElapsedTime();
 
     public void loop() {
-
-
-        /*
-        if (liftState == LiftState.RESET){
-            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
-        }
-        if(liftState == LiftState.GRIP_DOWN){
-            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
-        }
-        if(liftState == LiftState.GRIP_UP){
-            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_GOLD);
-        }
-        if(liftState == LiftState.OPEN_CLAW){
-            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
-        }
-*/
-
         //Constant Loop for LIFT
         LIFT.setTargetPosition(liftTarget);
         LIFT2.setTargetPosition(liftTarget);
@@ -165,13 +133,9 @@ public class Worlds_TeleOp extends OpMode {
         LIFT2.setPower(ARM_SPEED);
         LIFT.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         LIFT2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) < 10) {
-            LIFT.setPower(0);
-            LIFT2.setPower(0);
-        }
 
         switch (liftState) {
-            //Drops Lift, claw open, pivot down
+            //Drops Lift, claw open, pivot down, flip up, twist up 
             case Intake_Normal:
                 liftTarget = (LIFT_LEVEL_ORIGINAL);
                 PivotL_Position = PIVOT_DOWN_FRONT;
@@ -187,6 +151,7 @@ public class Worlds_TeleOp extends OpMode {
                     scoreTimer.reset();
                     liftState = LiftState.Gripped_Normal;
                     FirstUpdate = true;
+                    break;
                 }
                 if (gamepad1.dpad_left) {
                     scoreTimer.reset();
@@ -197,11 +162,12 @@ public class Worlds_TeleOp extends OpMode {
                     scoreTimer.reset();
                     liftState = LiftState.Intake_Down_1;
                     FirstUpdate = true;
+                    break;
                 }
-                if (gamepad1.left_stick_button) {
-
+                if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) < 10) {
+                    LIFT.setPower(0);
+                    LIFT2.setPower(0);
                 }
-
                 FirstUpdate = false;
                 break;
             case Gripped_Normal:
@@ -210,7 +176,14 @@ public class Worlds_TeleOp extends OpMode {
                     scoreTimer.reset();
                     liftState = LiftState.Driving_Around;
                     FirstUpdate = true;
+                    break;
 
+                }
+                if (gamepad1.dpad_up) {
+                    scoreTimer.reset();
+                    liftState = LiftState.Ground;
+                    FirstUpdate = true;
+                    break;
                 }
                 //Sets arm up after 0.5 seconds
                 if (scoreTimer.milliseconds() >= 500) {
@@ -224,17 +197,46 @@ public class Worlds_TeleOp extends OpMode {
                     scoreTimer.reset();
                     liftState = LiftState.RESET;
                     FirstUpdate = true;
+                    break;
                 }
 
                 FirstUpdate = false;
                 break;
 
             case RESET:
-                if (scoreTimer.milliseconds() >= 200) {
+                if (scoreTimer.milliseconds() >= 300) {
                     flip_Position = 0.2;
                     scoreTimer.reset();
                     liftState = LiftState.Intake_Normal;
                     FirstUpdate = true;
+                    break;
+                }
+                FirstUpdate = false;
+                break;
+
+            case Ground:
+                PivotL_Position = PIVOT_DOWN_BACK;
+                PivotR_Position = PIVOT_DOWN_BACK;
+                flip_Position = FLIP_DOWN_BACK;
+                wrist_Position = TWIST_DOWN_BACK;
+                if (gamepad1.right_bumper) {
+                    scoreTimer.reset();
+                    liftState = LiftState.Ground_Drop;
+                    FirstUpdate = true;
+                    break;
+                }
+
+                FirstUpdate = false;
+                break;
+
+            case Ground_Drop:
+                claw_Position = 0.5;
+                flip_Position = 0.9;
+                if (scoreTimer.milliseconds() >= 200 && gamepad1.left_stick_y > 0.4) {
+                    scoreTimer.reset();
+                    liftState = LiftState.Intake_Normal;
+                    FirstUpdate = true;
+                    break;
                 }
                 FirstUpdate = false;
                 break;
@@ -246,6 +248,7 @@ public class Worlds_TeleOp extends OpMode {
                     wrist_Position = TWIST_UP_FRONT;
                     FirstUpdate = true;
                     scoreTimer.reset();
+                    break;
                 }
 
                 FirstUpdate = false;
@@ -264,10 +267,17 @@ public class Worlds_TeleOp extends OpMode {
                 PivotL_Position = PIVOT_UP_FRONT;
                 PivotR_Position = PIVOT_UP_FRONT;
                 flip_Position = FLIP_UP_FRONT;
+                if (gamepad1.left_trigger > 0.1 && gamepad1.right_trigger > 0.1) {
+                    flip_Position = 0.5;
+                    PivotL_Position = 0.3;
+                    PivotR_Position = 0.3;
+                    claw_Position = 0.38;
+                }
                 if (gamepad1.right_bumper) {
                     scoreTimer.reset();
                     liftState = LiftState.Lift_Lower;
                     FirstUpdate = true;
+                    break;
                 }
                 if (gamepad1.dpad_left) {
                     wrist_Position = TWIST_DOWN_FRONT;
@@ -275,9 +285,15 @@ public class Worlds_TeleOp extends OpMode {
                 if (gamepad1.dpad_right) {
                     wrist_Position = TWIST_UP_FRONT;
                 }
+                if (gamepad1.dpad_up) {
+                    liftState = LiftState.Beacon;
+                    FirstUpdate = true;
+                    break;
+                }
 
                 FirstUpdate = false;
                 break;
+
 
             case Lift_Lower:
                 liftTarget = (LIFT.getCurrentPosition() - 100);
@@ -285,10 +301,11 @@ public class Worlds_TeleOp extends OpMode {
                 PivotL_Position = 0.4;
                 PivotR_Position = 0.4;
 
-                if (scoreTimer.milliseconds() >= 200) {
+                if (scoreTimer.milliseconds() >= 100) {
                     liftState = LiftState.Open_Claw;
                     scoreTimer.reset();
                     FirstUpdate = true;
+                    break;
                 }
 
                 FirstUpdate = false;
@@ -301,6 +318,7 @@ public class Worlds_TeleOp extends OpMode {
                     liftState = LiftState.Intake_Normal;
                     scoreTimer.reset();
                     FirstUpdate = true;
+                    break;
                 }
                 FirstUpdate = false;
                 break;
@@ -312,16 +330,18 @@ public class Worlds_TeleOp extends OpMode {
                 flip_Position = 0.94;
                 wrist_Position = TWIST_DOWN_FRONT;
                 if (gamepad1.left_bumper) {
-                    flip_Position = 0.85;
+                    flip_Position = 0.84;
                     scoreTimer.reset();
                     liftState = LiftState.Intake_Down_2;
                     FirstUpdate = true;
+                    break;
                 }
                 if (gamepad1.right_bumper) {
                     flip_Position = FLIP_DOWN_FRONT;
                     scoreTimer.reset();
                     liftState = LiftState.RESET;
                     FirstUpdate = true;
+                    break;
 
                 }
 
@@ -329,9 +349,11 @@ public class Worlds_TeleOp extends OpMode {
                 break;
 
             case Intake_Down_2:
-                if (scoreTimer.milliseconds() >= 100) {
-                    PivotL_Position = 0.85;
-                    PivotR_Position = 0.85;
+                if (scoreTimer.milliseconds() >= 200) {
+                    PivotL_Position = 0.86;
+                    PivotR_Position = 0.86;
+                }
+                if (scoreTimer.milliseconds() >= 300) {
                     claw_Position = CLAW_CLOSE;
                 }
                 if (scoreTimer.milliseconds() >= 500) {
@@ -339,6 +361,7 @@ public class Worlds_TeleOp extends OpMode {
                     liftState = LiftState.Ready_To_Score;
                     scoreTimer.reset();
                     FirstUpdate = true;
+                    break;
                 }
                 FirstUpdate = false;
                 break;
@@ -367,13 +390,11 @@ public class Worlds_TeleOp extends OpMode {
 
         claw.setPosition(claw_Position);
 
-
-        //SAFETY BUTTON TO RESET THE SYSTEM BACK TO THE START
-
         //CODE FOR DRIVE TRAIN
         double y = gamepad1.left_stick_y; // Remember, this is reversed!
         double x = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
         double rx = gamepad1.right_stick_x / 1.2;
+        //If flip side of pickup the drivetrain reverses too
         if (!FRONT_INTAKE) {
             y *= -1; // Remember, this is reversed!
             x *= -1;
@@ -395,6 +416,7 @@ public class Worlds_TeleOp extends OpMode {
         frontRight.setPower(frontRightPower);
         backRight.setPower(backRightPower);
 
+        //If lift is higher then 50 ticks motors slow down 20 percent
         if (Math.abs(LIFT.getCurrentPosition() - LIFT_LEVEL_ORIGINAL) > 50) {
             frontLeft.setPower(frontLeftPower / 1.2);
             backLeft.setPower(backLeftPower / 1.2);
@@ -415,7 +437,8 @@ public class Worlds_TeleOp extends OpMode {
         telemetry.update();
         getRuntime();
 
-        if(!dpadDownLastUpdate && gamepad1.dpad_down) {
+        //Code to switch between front intake and back intake using just one button
+        if (!dpadDownLastUpdate && gamepad1.dpad_down) {
             if (FRONT_INTAKE) {
                 FRONT_INTAKE = false;
             } else {
@@ -425,7 +448,4 @@ public class Worlds_TeleOp extends OpMode {
         dpadDownLastUpdate = gamepad1.dpad_down;
 
     }
-
-
 }
-
